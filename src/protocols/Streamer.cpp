@@ -873,8 +873,26 @@ void Streamer::ReceivePacketsLoop()
                 }
             }
             uint8_t* pktStart = (uint8_t*)pkt[pktIndex].data;
+
             if(pkt[pktIndex].counter - prevTs != samplesInPacket && pkt[pktIndex].counter != prevTs)
             {
+                uint64_t ts_diff = pkt[pktIndex].counter - prevTs;
+                if (ts_diff > samplesInPacket)
+                {
+                    static const complex16_t dummy[samples12InPkt] = {0};
+                    StreamChannel::Metadata meta;
+                    meta.timestamp = prevTs+samplesInPacket;
+                    meta.flags = RingFIFO::OVERWRITE_OLD | RingFIFO::SYNC_TIMESTAMP;
+                    while (meta.timestamp < pkt[pktIndex].counter)
+                    {
+                        int samplesCount = pkt[pktIndex].counter-meta.timestamp;
+                        if (samplesCount > samplesInPacket)
+                            samplesCount = samplesInPacket;
+                        mRxStreams[0].Write((const void*)dummy, samplesCount, &meta, 100);
+                        meta.timestamp += samplesCount;
+                    }
+                }
+
                 int packetLoss = ((pkt[pktIndex].counter - prevTs)/samplesInPacket)-1;
                 for(auto &value: mRxStreams)
                     if (value.used && value.mActive)
