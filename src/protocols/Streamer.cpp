@@ -557,7 +557,8 @@ int Streamer::UpdateThreads(bool stopAll)
         /* START VINZ0R */
 
         /* Init some defaults */
-        const uint16_t channelEnables = (mRxStreams[0]||mTxStreams[0]) + 2 * (mRxStreams[1]||mTxStreams[1]);
+        //const uint16_t channelEnables = (mRxStreams[0]||mTxStreams[0]) + 2 * (mRxStreams[1]||mTxStreams[1]);
+        const uint16_t channelEnables = (mRxStreams[0].used||mTxStreams[0].used) + 2 * (mRxStreams[1].used||mTxStreams[1].used);
 
         lms->Modify_SPI_Reg_bits(LMS7param(LML1_MODE), 0);
         lms->Modify_SPI_Reg_bits(LMS7param(LML2_MODE), 0);
