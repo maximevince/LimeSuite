@@ -554,50 +554,8 @@ int Streamer::UpdateThreads(bool stopAll)
     //configure FPGA on first start, or disable FPGA when not streaming
     if((needTx || needRx) && (!txThread.joinable()) && (!rxThread.joinable()))
     {
-        /* START VINZ0R */
-
-        /* Init some defaults */
-        const uint16_t channelEnables = (mRxStreams[0].used||mTxStreams[0].used) + 2 * (mRxStreams[1].used||mTxStreams[1].used);
-
-        lms->Modify_SPI_Reg_bits(LMS7param(LML1_MODE), 0);
-        lms->Modify_SPI_Reg_bits(LMS7param(LML2_MODE), 0);
-        lms->Modify_SPI_Reg_bits(LMS7param(LML1_FIDM), 0);
-        lms->Modify_SPI_Reg_bits(LMS7param(LML2_FIDM), 0);
-
+        /* Need to set PD_RX_AFE1 to have TX working at the correct rate!? */
         lms->Modify_SPI_Reg_bits(LMS7param(PD_RX_AFE1), 0);
-        lms->Modify_SPI_Reg_bits(LMS7param(PD_TX_AFE1), 0);
-        lms->Modify_SPI_Reg_bits(LMS7param(PD_RX_AFE2), (channelEnables&2 ? 0 : 1));
-        lms->Modify_SPI_Reg_bits(LMS7param(PD_TX_AFE2), (channelEnables&2 ? 0 : 1));
-
-        //if (lms->Get_SPI_Reg_bits(LMS7_MASK, true) == 0)
-        //{
-        //    lms->Modify_SPI_Reg_bits(LMS7param(LML2_S0S), 1);
-        //    lms->Modify_SPI_Reg_bits(LMS7param(LML2_S1S), 0);
-        //    lms->Modify_SPI_Reg_bits(LMS7param(LML2_S2S), 3);
-        //    lms->Modify_SPI_Reg_bits(LMS7param(LML2_S3S), 2);
-        //}
-        //else
-        //{
-        //    lms->Modify_SPI_Reg_bits(LMS7param(LML2_S0S), 0);
-        //    lms->Modify_SPI_Reg_bits(LMS7param(LML2_S1S), 1);
-        //    lms->Modify_SPI_Reg_bits(LMS7param(LML2_S2S), 2);
-        //    lms->Modify_SPI_Reg_bits(LMS7param(LML2_S3S), 3);
-        //}
-
-        //if(channelEnables & 0x2) //enable MIMO
-        //{
-        //    uint16_t macBck = lms->Get_SPI_Reg_bits(LMS7param(MAC));
-        //    lms->Modify_SPI_Reg_bits(LMS7param(MAC), 1);
-        //    lms->Modify_SPI_Reg_bits(LMS7param(EN_NEXTRX_RFE), 1);
-        //    lms->Modify_SPI_Reg_bits(LMS7param(EN_NEXTTX_TRF), 1);
-        //    lms->Modify_SPI_Reg_bits(LMS7param(MAC), macBck);
-        //}
-
-        /* END VINZ0R */
-
-
-
-
 
         fpga->WriteRegister(0xFFFF, 1 << chipId);
         if (mRxStreams[0].used && mRxStreams[1].used)
@@ -644,7 +602,7 @@ int Streamer::UpdateThreads(bool stopAll)
 
         fpga->WriteRegister(0x0008, mode | smpl_width);
 
-        //XXX const uint16_t channelEnables = (mRxStreams[0].used||mTxStreams[0].used) + 2 * (mRxStreams[1].used||mTxStreams[1].used);
+        const uint16_t channelEnables = (mRxStreams[0].used||mTxStreams[0].used) + 2 * (mRxStreams[1].used||mTxStreams[1].used);
         fpga->WriteRegister(0x0007, channelEnables);
 
         uint32_t reg9 = fpga->ReadRegister(0x0009);
